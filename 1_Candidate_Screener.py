@@ -125,16 +125,41 @@ class TechnicalAssessorAgent:
             st.error(f"An error occurred while generating a follow-up question: {e}")
             return None # Return None if it fails
 
+    def analyze_sentiment(self, answer_text):
+        """Analyzes the sentiment of the candidate's text answer."""
+        try:
+            prompt = f"""
+            Analyze the sentiment of the following candidate's answer. Classify it as one of: "Confident", "Neutral", or "Hesitant".
+            - "Confident" implies a direct, detailed, and assured response.
+            - "Neutral" implies a factual answer without strong emotional cues.
+            - "Hesitant" implies uncertainty, using phrases like "I think," "maybe," "I'm not sure," or giving vague/short answers.
+
+            Candidate's Answer: "{answer_text}"
+
+            Sentiment:
+            """
+            response = self.model.generate_content(prompt)
+            # Clean up the response to get one of the three expected values
+            sentiment = response.text.strip().replace('"', '')
+            if sentiment not in ["Confident", "Neutral", "Hesitant"]:
+                return "Neutral" # Default fallback
+            return sentiment
+        except Exception as e:
+            st.warning(f"Could not analyze sentiment: {e}")
+            return "N/A"
+
     def summarize_performance(self, technical_answers):
         """Analyzes the technical answers and generates a summary."""
         if not technical_answers:
             return "No technical answers were provided."
 
         try:
-            # Format the Q&A for the prompt
+            # Format the Q&A for the prompt, now including sentiment
             qa_text = ""
-            for q, a in technical_answers.items():
-                qa_text += f"Question: {q}\nAnswer: {a}\n\n"
+            for q, a_info in technical_answers.items():
+                answer = a_info['answer']
+                sentiment = a_info.get('sentiment', 'N/A') # Use .get for safety
+                qa_text += f"Question: {q}\nSentiment: {sentiment}\nAnswer: {answer}\n\n"
 
             prompt = f"""
             You are a senior engineering manager reviewing a candidate's technical screening.
@@ -142,8 +167,8 @@ class TechnicalAssessorAgent:
 
             Your summary should include:
             1.  **Overall Impression:** A brief, one-sentence summary.
-            2.  **Strengths:** 1-2 bullet points highlighting areas where the candidate demonstrated strong knowledge.
-            3.  **Areas for Improvement:** 1-2 bullet points identifying topics where the candidate seemed weak or could be probed further.
+            2.  **Strengths:** 1-2 bullet points highlighting areas where the candidate demonstrated strong knowledge, considering their sentiment.
+            3.  **Areas for Improvement:** 1-2 bullet points identifying topics where the candidate seemed weak or could be probed further, considering their sentiment.
 
             Keep the tone objective and constructive.
 
@@ -272,7 +297,13 @@ def save_and_download_summary(summary_data):
         mime="application/json",
     )
 
+def load_css(file_name):
+    """Loads a local CSS file into the Streamlit app."""
+    with open(file_name) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
 def main():
+    load_css("style.css") # Load custom CSS
     model = initialize_app()
     initialize_session_state(model)
 
@@ -340,6 +371,11 @@ def main():
             st.info("You have completed the initial screening. Thank you for your time!")
             
             summary_data = generate_summary_data()
+
+            # Display the AI summary in a custom card
+            with st.container():
+                st.markdown(f'<div class="summary-card"><h3>AI Performance Summary</h3><p>{summary_data["ai_summary"].replace("n", "<br>")}</p></div>', unsafe_allow_html=True)
+
             save_and_download_summary(summary_data)
 
         else: # In technical questions
@@ -369,7 +405,9 @@ def main():
                     if st.session_state.is_awaiting_follow_up_answer:
                         # Append the follow-up answer to the previous main answer
                         last_question = st.session_state.technical_questions[st.session_state.tech_question_index]
-                        st.session_state.technical_answers[last_question] += f"\nFollow-up Answer: {prompt}"
+                        
+                        # The answer is now a dict, so we append to the 'answer' key
+                        st.session_state.technical_answers[last_question]['answer'] += f"\nFollow-up Answer: {prompt}"
                         
                         st.session_state.is_awaiting_follow_up_answer = False
                         st.session_state.tech_question_index += 1 # Now, move to the next main question
@@ -377,7 +415,16 @@ def main():
                     # Case 2: User is answering a main technical question
                     else:
                         current_question = st.session_state.technical_questions[st.session_state.tech_question_index]
-                        st.session_state.technical_answers[current_question] = prompt
+                        
+                        # Analyze sentiment before storing
+                        with st.spinner("Analyzing sentiment..."):
+                            sentiment = st.session_state.assessor.analyze_sentiment(prompt)
+                        
+                        # Store answer and sentiment in a dictionary
+                        st.session_state.technical_answers[current_question] = {
+                            "answer": prompt,
+                            "sentiment": sentiment
+                        }
                         
                         # Generate a follow-up and check if it's valid
                         with st.spinner("Analyzing your answer..."):

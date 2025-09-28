@@ -1,0 +1,83 @@
+/* style.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+/* General Body Styles */
+body {
+    color: #2c3e50; /* Darker text for better contrast */
+    background-color: #f0f2f6;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Main App container with a subtle gradient */
+.stApp {
+    background-image: linear-gradient(to top, #f3e7e9 0%, #e3eeff 99%, #e3eeff 100%);
+}
+
+/* Headings */
+h1, h2, h3 {
+    color: #1E3A8A; /* Dark Blue */
+    font-weight: 600;
+}
+
+/* Buttons with shadow */
+.stButton>button {
+    border: 1px solid #1E3A8A;
+    border-radius: 12px;
+    padding: 10px 24px;
+    color: #1E3A8A;
+    background-color: #FFFFFF;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stButton>button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(30, 58, 138, 0.2);
+    color: #FFFFFF;
+    background-color: #2563EB;
+}
+
+/* Text Inputs */
+.stTextInput>div>div>input, .stTextArea>div>div>textarea {
+    border-radius: 8px;
+    border: 1px solid #D1D5DB; /* Gray */
+    background-color: #FFFFFF;
+}
+
+/* Expander with shadow and hover effect */
+.stExpander {
+    border: none;
+    border-radius: 12px;
+    background-color: #FFFFFF;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease-in-out;
+}
+.stExpander:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background-color: #FFFFFF;
+    border-right: 1px solid #E5E7EB;
+}
+
+/* Custom class for the final summary card */
+.summary-card {
+    background-color: #FFFFFF;
+    border-left: 6px solid #2563EB;
+    padding: 25px;
+    border-radius: 12px;
+    margin-top: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Chat message styling */
+[data-testid="stChatMessage"] {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 10px;
+}
+

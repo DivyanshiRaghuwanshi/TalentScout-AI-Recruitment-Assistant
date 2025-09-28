@@ -1,108 +1,93 @@
-# TalentScout AI 🤖
+# TalentScout AI Recruitment Assistant
 
-## Project Overview
+## 1. Project Overview
 
-TalentScout AI is an advanced, agentic AI recruitment assistant designed to automate the initial screening of job candidates. Built with Streamlit and powered by Google's Gemini models, this tool provides a seamless, interactive experience for candidates and a powerful, centralized dashboard for recruiters.
+TalentScout is an advanced, conversational AI agent designed to automate and enhance the initial technical screening of job candidates. Built with Python and Streamlit, it provides a seamless, interactive experience for candidates while delivering insightful, summarized data to recruiters.
 
-The application features a two-agent architecture:
-- **Candidate Screener Agent:** Interacts with the candidate, gathers essential information via a dynamic form, and conducts a technical interview.
-- **Technical Assessor Agent:** A specialized agent that dynamically generates insightful technical questions based on the candidate's declared tech stack and the content of their uploaded resume. It also provides an AI-generated summary of the candidate's performance.
+The application functions as a multi-page Streamlit app:
+- **Candidate Screener:** A candidate-facing interface that gathers information, conducts an AI-driven technical interview, and analyzes responses.
+- **Recruiter Dashboard:** A secure, password-protected dashboard for recruiters to review candidate submissions, performance summaries, and sentiment analysis.
 
-## Key Features
-- **Multi-Page Interface:** Separate, dedicated interfaces for candidates and recruiters.
-- **Dynamic Question Generation:** Moves beyond static question banks by using the Gemini LLM to create relevant questions on the fly.
-- **Resume Analysis:** Ingests PDF resumes, creating a vector-based memory to ask hyper-personalized questions based on the candidate's actual experience.
-- **Interactive Interview Flow:** Allows candidates to request an "easier question" and provides AI-generated follow-up questions to probe deeper into their knowledge.
-- **Secure Recruiter Dashboard:** A password-protected dashboard for recruiters to view, sort, and analyze all candidate submissions. Features include an AI-generated performance summary for each candidate.
-- **Secure Password Management:** Uses `bcrypt` for securely hashing and storing the recruiter password, with a built-in interface for changing it.
+## 2. Installation Instructions
 
-## Installation Instructions
+To set up and run this project locally, please follow these steps:
 
 1.  **Clone the Repository:**
     ```bash
-    git clone <your-repository-url>
-    cd TalentScout-AgenticAIProject
+    git clone https://github.com/DivyanshiRaghuwanshi/TalentScout-AI-Recruitment-Assistant.git
+    cd TalentScout-AI-Recruitment-Assistant
     ```
 
 2.  **Create and Activate a Virtual Environment:**
+    Using a virtual environment is crucial to prevent dependency conflicts.
     ```bash
-    # For Windows
+    # Create the environment
     python -m venv .venv
-    .\.venv\Scripts\activate
 
-    # For macOS/Linux
-    python3 -m venv .venv
-    source .venv/bin/activate
+    # Activate on Windows (PowerShell)
+    .\\.venv\\Scripts\\Activate.ps1
     ```
 
 3.  **Install Dependencies:**
+    With your virtual environment active, install all required packages from the `requirements.txt` file.
     ```bash
     pip install -r requirements.txt
     ```
 
 4.  **Set Up Environment Variables:**
-    - Create a file named `.env` in the root of the project.
-    - Add your Google Gemini API key to this file:
-      ```
-      GOOGLE_API_KEY="your_api_key_here"
-      ```
+    Create a file named `.env` in the project's root directory. Add your Google API key to this file:
+    ```
+    GOOGLE_API_KEY="YOUR_GOOGLE_API_KEY_HERE"
+    ```
 
 5.  **Run the Application:**
+    Launch the Streamlit app from your terminal.
     ```bash
     streamlit run 1_Candidate_Screener.py
     ```
-    The application will open in your web browser.
+    The application will open in your default web browser.
 
-## Usage Guide
+## 3. Usage Guide
 
-### For Candidates
-- Navigate to the **Candidate Screener** page.
-- Fill in your personal and professional details in the form.
-- Optionally, upload your PDF resume for a more personalized interview.
-- Answer the technical questions one by one. You can use the "Easier Question" button if needed.
+- **For Candidates:** Access the main URL to begin the screening. Fill out the initial form and upload an optional resume. Answer the technical questions presented by the AI assistant, "Scout."
+- **For Recruiters:** Navigate to the "Recruiter Dashboard" page from the sidebar. Log in using the password. View all candidate submissions in the main table. Select a candidate from the dropdown to view their detailed summary, including the AI's performance analysis and a breakdown of their answers and sentiment.
 
-### For Recruiters
-- Navigate to the **Recruiter Dashboard** page from the sidebar.
-- The first time you access the dashboard, the default password is `password123`.
-- Once logged in, you will see a table of all completed candidate screenings.
-- You can select a candidate from the dropdown to view their full summary, including their answers and the AI-generated performance analysis.
-- To change your password, use the "Change Password" form at the bottom of the dashboard.
+## 4. Technical Details
 
-## Technical Details
+#### Libraries and Tech Stack
+- **Backend:** Python
+- **Frontend:** Streamlit
+- **LLM:** Google Gemini (`gemini-pro-latest` for generation, `models/embedding-001` for embeddings)
+- **Resume & Vectorization:** LangChain, FAISS (for in-memory vector search), PyMuPDF (for PDF text extraction)
+- **Data Validation:** Pydantic (for form validation)
+- **Authentication:** `bcrypt` for secure password hashing and verification.
+- **Environment Management:** `python-dotenv` for secrets management.
 
-- **Framework:** Streamlit
-- **Core Libraries:**
-    - `google-generativeai`: For interacting with the Gemini Pro LLM.
-    - `langchain`, `langchain-community`, `faiss-cpu`: For text splitting, embeddings, and vector store creation during resume analysis.
-    - `pydantic`: For robust data validation of the candidate submission form.
-    - `bcrypt`: For secure password hashing.
-    - `PyMuPDF`: For extracting text from PDF resumes.
-- **LLM Models:**
-    - **Generation:** `gemini-pro-latest`
-    - **Embeddings:** `models/embedding-001`
-- **Architecture:**
-    - **Multi-Page App:** The project is structured as a multi-page Streamlit app, with the main screener in the root and additional pages (like the dashboard) in the `pages/` directory.
-    - **Modular Logic:** Code is organized into logical modules: `validators.py` for data validation, `resume_processor.py` for handling PDF and vectorization, and `auth.py` for password management.
+#### Architectural Decisions
+- **Multi-Page App:** The application is structured as a multi-page Streamlit app to enforce a clear separation of concerns between the candidate-facing and recruiter-facing functionalities.
+- **Agent-Based Logic:** The core AI logic is encapsulated within a `TechnicalAssessorAgent` class. This makes the code modular and easy to maintain, as all AI-related tasks (question generation, analysis, summarization) are handled by this agent.
+- **State Management:** Streamlit's `session_state` is used extensively to manage the conversation flow, store user data, and track the interview stage.
+- **Security:** The recruiter dashboard is protected by a password system. Passwords are not stored in plain text; instead, `bcrypt` is used to store a secure hash in a git-ignored file (`.password.hash`), ensuring credentials are not exposed.
 
-## Prompt Design
+## 5. Prompt Design
 
-The effectiveness of this agent relies heavily on prompt engineering.
-- **Technical Question Generation:** The agent uses a detailed prompt that instructs the AI to act as a senior engineer. It has two modes:
-    1.  **Without Resume:** Generates insightful, open-ended questions based on the declared tech stack.
-    2.  **With Resume:** A more advanced prompt instructs the AI to synthesize the resume content with the tech stack, asking questions that directly reference the candidate's listed projects and experience.
-- **Follow-up & Easier Questions:** Specific prompts were designed to either probe deeper into a given answer or to generate a more fundamental question on the same topic, creating an adaptive interview flow.
-- **AI Summary:** At the end of the interview, a final prompt instructs the model to act as a senior hiring manager and produce a concise, professional summary of the candidate's strengths and weaknesses based on the entire technical Q&A.
+The effectiveness of the AI hinges on carefully crafted prompts.
 
-## Challenges & Solutions
+- **Persona-Driven Prompts:** The AI is given the persona of "Scout," a sharp, experienced senior engineer. This ensures the tone of the conversation is professional and appropriate for a technical screening.
+- **Context-Aware Question Generation:**
+    - **With Resume:** If a resume is provided, the prompt instructs the AI to synthesize the candidate's declared tech stack with specific projects mentioned in the resume. This leads to deeply personalized and insightful questions.
+    - **Without Resume:** If no resume is available, a fallback prompt is used to generate strong, open-ended questions based solely on the declared tech stack.
+- **Specialized Task Prompts:** Separate, highly-focused prompts are used for specialized tasks like generating an "easier question," a "follow-up question," or analyzing the sentiment of an answer. This ensures the AI produces a predictable and accurate output for each specific task.
 
-- **Challenge:** Initial `404 Model Not Found` errors with the Gemini API.
-  - **Solution:** A utility script (`check_models.py`) was created to query the API directly and identify a valid, available model name (`gemini-pro-latest`), resolving the issue.
+## 6. Challenges & Solutions
 
-- **Challenge:** `ImportError` for `email-validator` after adding Pydantic for validation.
-  - **Solution:** Research revealed that email validation requires an extra dependency. This was fixed by changing `pydantic` to `pydantic[email]` in `requirements.txt`.
+- **Challenge:** Initial `ModuleNotFoundError` for `google.generativeai` and dependency conflicts with globally installed packages like `tensorflow-intel`.
+- **Solution:** The issue was resolved by creating a dedicated virtual environment (`.venv`) for the project. This isolated the project's dependencies from the global Python installation, ensuring a clean and stable environment. The `requirements.txt` file was also updated.
 
-- **Challenge:** Persistent `ImportError` during a major UI refactor from a sequential chat to a single form.
-  - **Solution:** The root cause was a failure to keep `app.py` and `validators.py` in sync. The solution was to adopt a more careful, user-confirmed process to replace the entire file content, ensuring consistency.
+- **Challenge:** Ensuring the Recruiter Dashboard was secure and not publicly accessible.
+- **Solution:** A robust authentication system was built using the `bcrypt` library. A dedicated `auth.py` module handles password hashing, setting, and checking, ensuring that recruiter-sensitive data is protected.
 
-- **Challenge:** Storing the recruiter password securely.
-  - **Solution:** The initial hardcoded password was replaced with a secure system using the `bcrypt` library. A new `auth.py` module was created to handle hashing, checking, and updating the password, which is stored as a hash in a `.password.hash` file (which is git-ignored).
+## 7. Bonus Enhancements
+
+- **Modern UI/UX:** A custom `style.css` file provides a more attractive and professional user interface with custom fonts, gradients, and interactive hover effects.
+- **Sentiment Analysis:** The AI analyzes the text of a candidate's answers to gauge their confidence level, providing recruiters with deeper insight.

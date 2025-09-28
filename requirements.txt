@@ -8,3 +8,4 @@ pydantic[email]
 PyMuPDF
 langchain-community
 bcrypt
+google-generativeai
