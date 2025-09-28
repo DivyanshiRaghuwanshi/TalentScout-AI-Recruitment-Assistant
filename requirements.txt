@@ -1,0 +1,10 @@
+streamlit
+python-dotenv
+google-generativeai
+langchain
+langchain-google-genai
+faiss-cpu
+pydantic[email]
+PyMuPDF
+langchain-community
+bcrypt
