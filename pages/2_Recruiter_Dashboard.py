@@ -115,8 +115,9 @@ def main():
             
             st.markdown("#### AI-Generated Performance Summary")
             ai_summary = selected_summary.get('ai_summary', 'Not available.')
+            summary_html = ai_summary.replace("\n", "<br>")
             # Use the custom card style
-            st.markdown(f'<div class="summary-card">{ai_summary.replace("n", "<br>")}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="summary-card">{summary_html}</div>', unsafe_allow_html=True)
 
             st.markdown("#### Technical Q&A Breakdown")
             responses = selected_summary.get("technical_responses", {})
