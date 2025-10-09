@@ -3,6 +3,7 @@ import os
 import json
 import pandas as pd
 from auth import check_password as auth_check_password, set_password as auth_set_password
+from shortlisting_agent import run_shortlisting_agent
 
 # --- Configuration ---
 SUMMARIES_DIR = "summaries"
@@ -86,6 +87,34 @@ def main():
     if not summaries:
         st.info("No candidate summaries found yet. As candidates complete the screening, their results will appear here.")
     else:
+        # --- AI Shortlisting Agent Section ---
+        st.header("🤖 AI Shortlisting Agent")
+        with st.expander("Run AI Analysis to Shortlist Candidates"):
+            job_description = st.text_area(
+                "Enter the Job Description",
+                height=200,
+                placeholder="Paste the full job description here to get a tailored analysis..."
+            )
+            if st.button("Generate Shortlist Report"):
+                if not job_description.strip():
+                    st.warning("Please enter a job description before running the agent.")
+                else:
+                    with st.spinner("AI Hiring Manager is analyzing candidates..."):
+                        report = run_shortlisting_agent(job_description)
+                        st.session_state['shortlist_report'] = report
+        
+        if 'shortlist_report' in st.session_state:
+            st.subheader("Shortlisting Report")
+            st.markdown(st.session_state['shortlist_report'])
+            if st.button("Clear Report"):
+                del st.session_state['shortlist_report']
+                st.rerun()
+
+        st.divider()
+
+        # --- Individual Candidate Review Section ---
+        st.header("Individual Candidate Review")
+        
         # Create a DataFrame for a clean, sortable table view
         overview_data = []
         for summary in summaries:

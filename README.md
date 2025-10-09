@@ -1,12 +1,12 @@
-# TalentScout AI Recruitment Assistant
+# TalentScout AI: Autonomous Hiring Assistant
 
 ## 1. Project Overview
 
-TalentScout is an advanced, conversational AI agent designed to automate and enhance the initial technical screening of job candidates. Built with Python, Streamlit, and LangGraph, it provides a seamless, interactive experience for candidates while delivering insightful, summarized data to recruiters.
+TalentScout is an advanced, multi-agent AI system designed to automate the entire initial hiring workflow, from technical screening to final shortlisting. Built with Python, LangGraph, and Streamlit, it provides a seamless experience for candidates and delivers powerful, AI-driven insights to recruiters.
 
-The application functions as a multi-page Streamlit app:
-- **Candidate Screener:** A candidate-facing interface that gathers information and conducts a dynamic, AI-driven technical interview.
-- **Recruiter Dashboard:** A secure, password-protected dashboard for recruiters to review candidate submissions, performance summaries, and sentiment analysis.
+The application functions as a two-part system:
+- **Conversational Screening Agent:** A candidate-facing interface that gathers information and conducts a dynamic, AI-driven technical interview.
+- **Recruiter Dashboard & Shortlisting Agent:** A secure dashboard where recruiters can not only review individual candidate reports but also trigger a powerful "AI Hiring Manager" agent. This agent analyzes all candidates against a job description and autonomously generates a final shortlist with detailed justifications.
 
 ## 2. Installation Instructions
 
@@ -49,15 +49,16 @@ To set up and run this project locally, please follow these steps:
 
 ## 3. Usage Guide
 
-- **For Candidates:** Access the main URL to begin the screening. Fill out the initial form and upload an optional resume. Answer the technical questions presented by the AI assistant, "Scout." You will have the option to request an easier question if needed.
-- **For Recruiters:** Navigate to the "Recruiter Dashboard" page from the sidebar. Log in using the password. View all candidate submissions in the main table. Select a candidate from the dropdown to view their detailed summary, including the AI's performance analysis and a breakdown of their answers and sentiment.
+- **For Candidates:** Access the main URL to begin the screening. Fill out the initial form and upload an optional resume. Answer the technical questions presented by the AI assistant, "Scout."
+- **For Recruiters:** Navigate to the "Recruiter Dashboard" and log in. Here you can:
+    1.  Review individual candidate summaries and performance metrics.
+    2.  Use the **AI Shortlisting Agent** by providing a job description to automatically analyze all candidates and generate a final, ranked shortlist.
 
 ## 4. Technical Details
 
 #### Libraries and Tech Stack
 - **Backend:** Python
-- **Conversational Agent Framework:** LangGraph
-- **LLM Interaction:** LangChain (`langchain-google-genai`)
+- **AI Agent Framework:** LangGraph, LangChain
 - **LLM:** Google Gemini (`gemini-pro-latest`)
 - **Frontend:** Streamlit
 - **Resume & Vectorization:** FAISS (for in-memory vector search), PyMuPDF (for PDF text extraction)
@@ -66,9 +67,10 @@ To set up and run this project locally, please follow these steps:
 - **Environment Management:** `python-dotenv` for secrets management.
 
 #### Architectural Decisions
-- **LangGraph State Machine:** The core of the application is a robust conversational agent built with LangGraph. The entire interview flow—from generating questions to analyzing answers, handling follow-ups, and summarizing—is managed as a state machine graph. This makes the logic modular, maintainable, and easy to extend.
-- **Separation of Concerns:** The LangGraph logic is encapsulated in `interview_graph.py`, while the Streamlit UI code in `1_Candidate_Screener.py` is responsible only for presentation and user interaction. This creates a clean separation between the agent's "brain" and the application's "face."
-- **Multi-Page App:** The application uses Streamlit's multi-page functionality to enforce a clear separation between the candidate-facing and recruiter-facing interfaces.
+- **Multi-Agent System:** The application is architected as a multi-agent system.
+    - The **Screening Agent**, built with a LangGraph state machine, manages the complex, real-time conversational flow of the interview.
+    - The **Shortlisting Agent** acts as an autonomous "AI Hiring Manager," processing batch data to perform comparative analysis and decision-making.
+- **Separation of Concerns:** Each agent (`interview_graph.py`, `shortlisting_agent.py`) has a distinct responsibility, creating a modular and scalable architecture. The Streamlit UI remains a clean presentation layer.
 - **Security:** The recruiter dashboard is protected by a password system using `bcrypt` to store a secure hash of the password, ensuring credentials are not exposed.
 
 ## 5. Prompt Design
@@ -79,7 +81,8 @@ The effectiveness of the AI hinges on carefully crafted prompts, managed via Lan
 - **Context-Aware Question Generation:**
     - **With Resume:** If a resume is provided, the prompt instructs the AI to synthesize the candidate's declared tech stack with specific projects mentioned in the resume, leading to deeply personalized questions.
     - **Without Resume:** A fallback prompt generates strong, open-ended questions based solely on the declared tech stack.
-- **Structured JSON Output:** For complex tasks like answer analysis, the prompt explicitly instructs the model to return a JSON object. This is paired with LangChain's `JsonOutputParser` to ensure reliable, structured data for sentiment analysis and follow-up question generation.
+- **Structured JSON Output:** For complex tasks like answer analysis, the prompt explicitly instructs the model to return a JSON object, ensuring reliable data parsing.
+- **Persona-Driven Shortlisting:** The shortlisting agent is given the persona of an expert Senior Hiring Manager with specific criteria, enabling it to produce high-quality, justified shortlisting reports.
 
 ## 6. Challenges & Solutions
 
@@ -90,6 +93,9 @@ The effectiveness of the AI hinges on carefully crafted prompts, managed via Lan
 - **Solution:** The root cause was multiple, rapid-fire API calls. The initial idea of adding `time.sleep()` delays was discarded as it would create a poor user experience. The superior solution involved a significant refactor:
     - **Prompt Engineering:** The AI prompt was re-engineered to request a structured JSON output containing both the sentiment analysis and the next follow-up question in a single response.
     - **Code Refactoring:** The logic was updated to make a single API call and parse the resulting JSON. This dramatically reduced the number of API requests, resolving the rate limit issue while improving application performance.
+
+- **Challenge:** Scaling from a single-purpose screening tool to a comprehensive analysis tool.
+- **Solution:** A new, specialized **Shortlisting Agent** was created. This agent is designed for batch processing and comparative analysis, allowing it to evaluate multiple candidates simultaneously against a job description, a task the real-time conversational agent is not suited for.
 
 - **Challenge:** Ensuring the Recruiter Dashboard was secure and not publicly accessible.
 - **Solution:** A robust authentication system was built using the `bcrypt` library. A dedicated `auth.py` module handles password hashing, setting, and checking.
@@ -141,3 +147,11 @@ Here is a walkthrough of the TalentScout AI application, from the candidate's in
 **6. Recruiter Dashboard & Candidate Review**
 *The dashboard displays all submissions. Recruiters can select a candidate to view their detailed answers and the AI's final assessment.*
 ![Recruiter Dashboard](demo_images/recruiter_dashboard.png)
+
+**7. AI Shortlisting Agent in Action**
+*Recruiters can provide a job description to the new AI agent to get an automated analysis of all candidates.*
+![Shortlisting Agent UI](demo_images/shortlisting_agent_ui.png)
+
+**8. Final Shortlist Report**
+*The agent delivers a concise, professional report with a ranked list of candidates and justifications for each decision.*
+![Shortlisting Report](demo_images/shortlisting_report.png)
